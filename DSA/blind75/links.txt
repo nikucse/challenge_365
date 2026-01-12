@@ -1,0 +1,5 @@
+https://leetcode.com/problem-list/oizxjoit/
+
+
+javac DSA/blind75/TwoSum.java && 
+java DSA.blind75.TwoSum
