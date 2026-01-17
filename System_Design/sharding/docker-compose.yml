@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # APPLICATION SERVICE
+  # ===========================================================================
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - shard1-primary
+      - shard1-replica
+      - shard2-primary
+      - shard2-replica
+    environment:
+      # Use local IP or special DNS to connect from container to host if needed,
+      # but usually, this service would connect to the DB containers below.
+      - SPRING_PROFILES_ACTIVE=default
+
+  # ===========================================================================
+  # DATABASE SHARD 1 (Schools A-M)
+  # ===========================================================================
+
+  # Primary database for Shard 1 - Used for ALL WRITE operations
+  shard1-primary:
+    image: postgres:17-alpine
+    container_name: shard1-primary
+    environment:
+      POSTGRES_DB: school
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d school"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Read-only Replica for Shard 1 - Used for READ operations (Eventual Consistency)
+  shard1-replica:
+    image: postgres:17-alpine
+    container_name: shard1-replica
+    environment:
+      POSTGRES_DB: school
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d school"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # DATABASE SHARD 2 (Schools N-Z)
+  # ===========================================================================
+
+  # Primary database for Shard 2 - Used for ALL WRITE operations
+  shard2-primary:
+    image: postgres:17-alpine
+    container_name: shard2-primary
+    environment:
+      POSTGRES_DB: school
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d school"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Read-only Replica for Shard 2 - Used for READ operations (Eventual Consistency)
+  shard2-replica:
+    image: postgres:17-alpine
+    container_name: shard2-replica
+    environment:
+      POSTGRES_DB: school
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d school"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
